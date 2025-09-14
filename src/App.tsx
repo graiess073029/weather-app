@@ -50,15 +50,19 @@ export const App = () => {
   const getCurrentPos = async () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
+        try{
+          const { latitude, longitude } = position.coords;
         setCity({ lat: latitude.toString(), long: longitude.toString()});
 
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
         const body: ReverseGeocodingResponse = await response.json()
-
-        console.log(body)
         setCityName(`${body?.address?.city || body?.address?.state }, ${body?.address?.country}`)
         setCity({ lat: latitude.toString(), long: longitude.toString() });
+        }
+
+        catch {
+          setError(true)
+        }
 
       },
       () => {
@@ -109,8 +113,6 @@ export const App = () => {
       try {
         if(!city || Object.keys(city).length === 0) return
 
-        console.log(city)
-
         setData(undefined);
         setLoadingWeather(true);
         let link = `https://api.open-meteo.com/v1/forecast?current_weather=true&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code`;
@@ -146,7 +148,6 @@ export const App = () => {
         setLoadingCities(true);
         setCities([]);
         setPlace("");
-        console.log(new Date());
         const response = await fetch(
           `https://geocoding-api.open-meteo.com/v1/search?name=${place}`,
           {
